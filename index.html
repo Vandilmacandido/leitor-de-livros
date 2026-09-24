@@ -2,10 +2,19 @@
 <html lang="pt-BR" class="theme-light-comfort">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>AcessiRead — Leitor Web Acessível</title>
   <meta name="description" content="Leitor web acessível de PDFs e e-books com síntese de voz (Web Speech API), sincronização visual de frases, marca-texto e suporte a WCAG 2.2 AAA.">
   
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AcessiRead">
+  <meta name="theme-color" content="#2563EB">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+
   <!-- Favicon Acessível -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
@@ -34,6 +43,7 @@
   <link rel="stylesheet" href="/src/styles/reader.css">
   <link rel="stylesheet" href="/src/styles/preferences.css">
   <link rel="stylesheet" href="/src/styles/modals.css">
+  <link rel="stylesheet" href="/src/styles/mobile.css">
 </head>
 <body>
   <!-- Link de salto acessível para tecnologias assistivas -->
@@ -174,6 +184,15 @@
             </button>
           </div>
         </header>
+
+        <!-- Banner de Instalação PWA (Exibido em Celulares/Tablets) -->
+        <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;">
+          <div class="pwa-install-text">
+            <span aria-hidden="true">📲</span>
+            <span>Instalar o AcessiRead no seu celular ou tablet como App Web</span>
+          </div>
+          <button type="button" id="btn-trigger-pwa-install" class="btn btn-primary btn-pwa-install">Instalar App</button>
+        </div>
 
         <!-- Card de Meta de Leitura -->
         <div class="library-goal-card" role="region" aria-label="Meta de leitura">
@@ -360,6 +379,29 @@
       </div>
     </section>
   </main>
+
+  <!-- ========================================================
+       BARRA DE NAVEGAÇÃO INFERIOR ESTILO APP WEB (MOBILE / TABLET)
+       Conforme os mockups de Celular e Tablet
+       ======================================================== -->
+  <nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Navegação principal do aplicativo">
+    <button type="button" class="mobile-nav-item active" data-tab="library" aria-label="Ir para a Biblioteca">
+      <span class="mobile-nav-icon" aria-hidden="true">📚</span>
+      <span>Biblioteca</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="reader" aria-label="Ir para o Leitor de Documentos">
+      <span class="mobile-nav-icon" aria-hidden="true">📖</span>
+      <span>Leitor</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="highlights" aria-label="Ver Destaques e Anotações">
+      <span class="mobile-nav-icon" aria-hidden="true">🖍️</span>
+      <span>Destaques</span>
+    </button>
+    <button type="button" class="mobile-nav-item" data-tab="preferences" aria-label="Abrir Preferências de Acessibilidade">
+      <span class="mobile-nav-icon" aria-hidden="true">♿</span>
+      <span>Acessibilidade</span>
+    </button>
+  </nav>
 
   <!-- ========================================================
        MODAL: VOCÊ PAROU AQUI! (RETOMADA DE LEITURA - MOCKUP 5)

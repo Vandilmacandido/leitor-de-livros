@@ -1,0 +1,20 @@
+{
+  "name": "AcessiRead — Leitor Web Acessível",
+  "short_name": "AcessiRead",
+  "description": "Leitor web acessível de PDFs e e-books com síntese de voz (Web Speech API), sincronização visual de frases e suporte a WCAG 2.2 AAA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF9F5",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "categories": ["education", "books", "accessibility"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

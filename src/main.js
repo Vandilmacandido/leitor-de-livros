@@ -104,6 +104,7 @@ async function initApp() {
   bindModalEvents();
   bindSpeechEngineCallbacks();
   populateVoiceSelector();
+  initMobilePwaFeatures();
 }
 
 // ========================================================
@@ -133,6 +134,29 @@ function switchView(viewId) {
       firstFocusable.focus();
     }
   }
+
+  // Atualiza a barra de navegação inferior estilo App Web
+  const bottomNav = document.getElementById('mobile-bottom-nav');
+  if (bottomNav) {
+    if (viewId === 'view-auth') {
+      bottomNav.style.display = 'none';
+    } else {
+      bottomNav.style.display = 'flex';
+      updateMobileNavActiveTab(viewId === 'view-reader' ? 'reader' : 'library');
+    }
+  }
+}
+
+function updateMobileNavActiveTab(tabName) {
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    if (item.getAttribute('data-tab') === tabName) {
+      item.classList.add('active');
+      item.setAttribute('aria-current', 'page');
+    } else {
+      item.classList.remove('active');
+      item.removeAttribute('aria-current');
+    }
+  });
 }
 
 // ========================================================
@@ -1184,4 +1208,73 @@ function escapeHtml(str) {
 function capitalize(s) {
   if (!s) return '';
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ========================================================
+// PWA & RECURSOS MOBILE / TABLET
+// ========================================================
+function initMobilePwaFeatures() {
+  // 1. Registro do Service Worker para funcionamento Offline e PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('[AcessiRead] Service Worker PWA registrado com sucesso:', reg.scope);
+      }).catch((err) => {
+        console.log('[AcessiRead] Falha ao registrar Service Worker:', err);
+      });
+    });
+  }
+
+  // 2. Banner de Instalação PWA
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.style.display = 'flex';
+  });
+
+  const btnInstall = document.getElementById('btn-trigger-pwa-install');
+  btnInstall?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('AcessiRead instalado com sucesso!');
+      }
+      deferredPrompt = null;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.style.display = 'none';
+    }
+  });
+
+  // 3. Barra de Navegação Inferior estilo App Web (Celular & Tablet)
+  const navItems = document.querySelectorAll('.mobile-nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const tab = item.getAttribute('data-tab');
+
+      if (tab === 'library') {
+        speechEngine.stop();
+        closeAllModals();
+        switchView('view-library');
+        renderLibrary();
+        updateMobileNavActiveTab('library');
+      } else if (tab === 'reader') {
+        closeAllModals();
+        if (state.currentBook) {
+          switchView('view-reader');
+        } else if (state.books.length > 0) {
+          openBook(state.books[0]);
+        }
+        updateMobileNavActiveTab('reader');
+      } else if (tab === 'highlights') {
+        openHighlightsDrawer();
+        updateMobileNavActiveTab('highlights');
+      } else if (tab === 'preferences') {
+        openModal('modal-preferences');
+        updateMobileNavActiveTab('preferences');
+      }
+    });
+  });
 }
