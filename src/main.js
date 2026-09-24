@@ -1177,46 +1177,83 @@ function jumpToSearchMatch(matchIndex) {
 }
 
 // ========================================================
-// CONFIGURAÇÃO DO FIREBASE (MODAL)
+// CONFIGURAÇÃO DO FIREBASE (MODAL & BADGE DE STATUS)
 // ========================================================
 function setupFirebaseModal() {
   const form = document.getElementById('form-firebase-config');
-  const btnReset = document.getElementById('btn-reset-firebase');
+  const btnClear = document.getElementById('btn-clear-fb-config') || document.getElementById('btn-reset-firebase');
+  const btnOpenConfig = document.getElementById('btn-open-firebase-config');
+  const btnBadge = document.getElementById('btn-firebase-badge');
   const statusText = document.getElementById('firebase-status-text');
+  const banner = document.getElementById('firebase-status-banner');
+  const bannerTitle = document.getElementById('firebase-banner-title');
+  const bannerDesc = document.getElementById('firebase-banner-desc');
 
-  if (statusText) {
-    statusText.textContent = isFirebaseLive
-      ? 'Status: Conectado ao Firebase Cloud (Firestore Ativo)'
-      : 'Status: Modo Local / Demonstração Ativo (Offline)';
+  // Atualiza badge e banner conforme status atual
+  function updateFirebaseUI() {
+    if (isFirebaseLive) {
+      if (btnBadge) {
+        btnBadge.classList.add('connected');
+        btnBadge.classList.remove('local');
+        btnBadge.setAttribute('title', 'Firebase conectado na nuvem (Firestore + Auth). Clique para gerenciar.');
+      }
+      if (statusText) statusText.textContent = 'Firebase: Nuvem';
+      if (banner) banner.className = 'fb-status-banner connected';
+      if (bannerTitle) bannerTitle.textContent = '🟢 Conectado ao Firebase Cloud (Firestore + Auth)';
+      if (bannerDesc) bannerDesc.textContent = `Sincronização ativa em tempo real no projeto: ${fbConfig?.projectId || 'cloud'}.`;
+    } else {
+      if (btnBadge) {
+        btnBadge.classList.remove('connected');
+        btnBadge.classList.add('local');
+        btnBadge.setAttribute('title', 'Firebase em modo local / offline. Clique para conectar suas chaves.');
+      }
+      if (statusText) statusText.textContent = 'Firebase: Local';
+      if (banner) banner.className = 'fb-status-banner local';
+      if (bannerTitle) bannerTitle.textContent = '🟠 Modo Local / Demonstração Ativo (Offline)';
+      if (bannerDesc) bannerDesc.textContent = 'O app está salvando livros, progresso e destaques com segurança no armazenamento local (localStorage) do seu navegador.';
+    }
   }
 
-  // Preenche campos se houver configuração salva
+  updateFirebaseUI();
+
+  // Abrir modal ao clicar no botão de chama ou no badge
+  btnOpenConfig?.addEventListener('click', () => openModal('modal-firebase'));
+  btnBadge?.addEventListener('click', () => openModal('modal-firebase'));
+
+  // Preenche inputs com valores atuais
+  const inputApiKey = document.getElementById('fb-input-apikey') || document.getElementById('fb-api-key');
+  const inputProjectId = document.getElementById('fb-input-projectid') || document.getElementById('fb-project-id');
+  const inputAuthDomain = document.getElementById('fb-input-authdomain') || document.getElementById('fb-auth-domain');
+  const inputAppId = document.getElementById('fb-input-appid') || document.getElementById('fb-app-id');
+
   if (fbConfig) {
-    if (document.getElementById('fb-api-key')) document.getElementById('fb-api-key').value = fbConfig.apiKey || '';
-    if (document.getElementById('fb-project-id')) document.getElementById('fb-project-id').value = fbConfig.projectId || '';
-    if (document.getElementById('fb-auth-domain')) document.getElementById('fb-auth-domain').value = fbConfig.authDomain || '';
-    if (document.getElementById('fb-app-id')) document.getElementById('fb-app-id').value = fbConfig.appId || '';
+    if (inputApiKey && fbConfig.apiKey) inputApiKey.value = fbConfig.apiKey;
+    if (inputProjectId && fbConfig.projectId) inputProjectId.value = fbConfig.projectId;
+    if (inputAuthDomain && fbConfig.authDomain) inputAuthDomain.value = fbConfig.authDomain;
+    if (inputAppId && fbConfig.appId) inputAppId.value = fbConfig.appId;
   }
 
   form?.addEventListener('submit', (e) => {
     e.preventDefault();
     const config = {
-      apiKey: document.getElementById('fb-api-key').value.trim(),
-      projectId: document.getElementById('fb-project-id').value.trim(),
-      authDomain: document.getElementById('fb-auth-domain').value.trim(),
-      appId: document.getElementById('fb-app-id').value.trim()
+      apiKey: (inputApiKey?.value || '').trim(),
+      projectId: (inputProjectId?.value || '').trim(),
+      authDomain: (inputAuthDomain?.value || '').trim(),
+      appId: (inputAppId?.value || '').trim()
     };
 
     if (!config.apiKey || !config.projectId) {
-      showToast('Preencha ao menos a apiKey e o projectId.', 'warning');
+      showToast('Preencha ao menos a API Key e o Project ID do Firebase.', 'warning');
       return;
     }
 
+    showToast('Salvando credenciais e conectando ao Firebase...');
     saveCustomFirebaseConfig(config);
   });
 
-  btnReset?.addEventListener('click', () => {
+  btnClear?.addEventListener('click', () => {
     clearCustomFirebaseConfig();
+    showToast('Configuração removida. Modo local ativado.');
   });
 }
 

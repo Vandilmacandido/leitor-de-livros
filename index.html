@@ -169,6 +169,12 @@
           </div>
 
           <div class="library-header-actions">
+            <!-- Badge de Status do Firebase -->
+            <button type="button" id="btn-firebase-badge" class="badge-firebase-status" title="Status da sincronização com o Firebase. Clique para gerenciar." aria-label="Status do Firebase. Clique para gerenciar conexão">
+              <span class="fb-status-dot" aria-hidden="true"></span>
+              <span id="firebase-status-text">Firebase: Local</span>
+            </button>
+
             <!-- Atalhos de Acessibilidade Rápidos -->
             <button type="button" id="btn-lib-toggle-contrast" class="btn-icon" title="Alternar Alto Contraste (Alt+C)" aria-label="Alternar modo de alto contraste">
               <span aria-hidden="true">🌓</span>
@@ -176,7 +182,7 @@
             <button type="button" id="btn-lib-open-preferences" class="btn-icon" title="Preferências de Leitura (Alt+T)" aria-label="Abrir preferências de leitura e acessibilidade">
               <span aria-hidden="true">Aa</span>
             </button>
-            <button type="button" id="btn-open-firebase-config" class="btn-icon" title="Configurar Conexão Firebase / Nuvem" aria-label="Configurar conexão com o Firebase">
+            <button type="button" id="btn-open-firebase-config" class="btn-icon" title="Configurações do Firebase" aria-label="Abrir configurações de conexão do Firebase">
               <span aria-hidden="true">🔥</span>
             </button>
             <button type="button" id="btn-logout" class="btn-icon" title="Sair da Conta" aria-label="Sair da conta">
@@ -269,9 +275,9 @@
         <!-- Barra Superior Fixa do Leitor -->
         <header class="reader-top-bar" role="banner">
           <div class="reader-nav-left">
-            <button type="button" id="btn-reader-back" class="btn btn-secondary" aria-label="Voltar para a biblioteca (Alt+B)">
+            <button type="button" id="btn-reader-back" class="btn btn-secondary btn-reader-back-btn" aria-label="Voltar para a biblioteca (Alt+B)">
               <span aria-hidden="true">←</span>
-              <span>Biblioteca</span>
+              <span class="btn-back-text">Biblioteca</span>
             </button>
           </div>
 
@@ -756,6 +762,84 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: CONEXÃO COM O FIREBASE & NUVEM (SPARK GRATUITO)
+       ======================================================== -->
+  <div id="modal-firebase" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="firebase-modal-title">
+    <div class="modal-dialog" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2 id="firebase-modal-title" class="modal-title">
+          <span aria-hidden="true">🔥</span> Conexão com Firebase
+        </h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar janela do Firebase">✕</button>
+      </div>
+
+      <!-- Banner de Status Atual -->
+      <div id="firebase-status-banner" class="fb-status-banner local">
+        <div class="fb-status-banner-header">
+          <span class="fb-dot-indicator" aria-hidden="true"></span>
+          <strong id="firebase-banner-title">Modo Local / Simulação Ativa</strong>
+        </div>
+        <p id="firebase-banner-desc">
+          O aplicativo está salvando livros, progresso e destaques com segurança no armazenamento local (localStorage) do seu navegador.
+        </p>
+      </div>
+
+      <!-- Informação sobre o Plano Gratuito Spark -->
+      <div class="fb-free-tier-notice">
+        <span aria-hidden="true" style="font-size: 1.25rem;">✨</span>
+        <div>
+          <strong>O Firebase é 100% gratuito (Plano Spark)</strong>
+          <p>Você pode conectar seu projeto criado no console do Firebase (<a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">console.firebase.google.com</a>) sem precisar cadastrar cartão de crédito.</p>
+        </div>
+      </div>
+
+      <!-- Formulário de Credenciais -->
+      <form id="form-firebase-config" class="fb-config-form">
+        <p class="fb-form-instructions">
+          Cole as credenciais do seu projeto Firebase abaixo para sincronizar seus dados na nuvem:
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="fb-input-apikey">API Key (apiKey):</label>
+          <input type="text" id="fb-input-apikey" class="form-input" placeholder="AIzaSy..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fb-input-projectid">ID do Projeto (projectId):</label>
+          <input type="text" id="fb-input-projectid" class="form-input" placeholder="ex: leitor-acessivel" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fb-input-authdomain">Domínio de Autenticação (authDomain):</label>
+          <input type="text" id="fb-input-authdomain" class="form-input" placeholder="ex: leitor-acessivel.firebaseapp.com" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fb-input-appid">ID do Aplicativo Web (appId):</label>
+          <input type="text" id="fb-input-appid" class="form-input" placeholder="1:123456789:web:abcdef..." autocomplete="off">
+        </div>
+
+        <div class="fb-actions-row">
+          <button type="submit" id="btn-save-fb-config" class="btn btn-primary" style="flex: 1;">
+            <span aria-hidden="true">💾</span>
+            <span>Salvar e Conectar</span>
+          </button>
+          <button type="button" id="btn-clear-fb-config" class="btn btn-secondary" title="Voltar ao modo local sem chaves">
+            <span aria-hidden="true">🔄</span>
+            <span>Usar Modo Local</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Dica sobre Netlify -->
+      <div class="fb-netlify-tip">
+        <strong>🌐 Publicação no Netlify (app.netlify.com):</strong>
+        <p>No Netlify, você também pode adicionar estas mesmas chaves diretamente no painel em <em>Site configuration → Environment variables</em> (com prefixo <code>VITE_FIREBASE_...</code>).</p>
+      </div>
     </div>
   </div>
 

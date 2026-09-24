@@ -1,7 +1,16 @@
 /**
  * Responsividade Avançada & Experiência de App Web (PWA)
- * Otimizado para Celulares, Tablets e Leitores Digitais
+ * Totalmente adaptável para Celulares, Tablets, Dobráveis e Telas Grandes
+ * Em conformidade com WCAG 2.2 AAA (Áreas de toque mínimas e respiros)
  */
+
+/* ========================================================
+   REGRAS GLOBAIS DE RESPONSIVIDADE & PREVENÇÃO DE OVERFLOW
+   ======================================================== */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 
 /* ========================================================
    BARRA DE NAVEGAÇÃO INFERIOR DO APP WEB (MOBILE / TABLET)
@@ -12,16 +21,16 @@
   left: 0;
   right: 0;
   z-index: 200;
-  height: calc(62px + env(safe-area-inset-bottom, 0px));
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);
-  box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   transition: transform 0.25s ease, background-color 0.25s ease;
 }
 
@@ -81,128 +90,377 @@
 }
 
 /* ========================================================
-   AJUSTES RESPONSIVOS NO LEITOR (MOBILE)
+   DISPOSITIVOS MÓVEIS (SMARTPHONES: ATÉ 699px)
    ======================================================== */
-@media (max-width: 768px) {
-  .reader-view-container {
-    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .reader-player-bar {
-    bottom: 0;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
-  }
-
+@media (max-width: 699px) {
+  /* Respiro inferior na biblioteca para não bater na barra de abas */
   .library-container {
-    padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
+    padding: 1rem 0.875rem calc(85px + env(safe-area-inset-bottom, 0px)) 0.875rem;
   }
-}
 
-@media (max-width: 640px) {
-  /* Topo do leitor compacto em celular */
+  /* Cabeçalho da Biblioteca Adaptável */
+  .library-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.875rem;
+    padding-bottom: 0.875rem;
+  }
+
+  .library-user-info {
+    justify-content: flex-start;
+  }
+
+  .library-welcome-title {
+    font-size: 1.2rem;
+  }
+
+  .library-welcome-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .library-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .badge-firebase-status {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  /* Barra de pesquisa & Filtros roláveis suavemente no celular */
+  .library-filter-tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.35rem;
+  }
+
+  .library-filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Grid de Livros: 1 coluna no celular */
+  .books-grid {
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .book-card {
+    padding: 1rem;
+  }
+
+  .book-card-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .btn-continue-reading {
+    width: 100%;
+    flex: none;
+  }
+
+  /* Card de Upload compacto no celular */
+  .library-upload-card {
+    padding: 1.25rem 1rem;
+    gap: 0.5rem;
+  }
+
+  /* ------------------------------------------------------
+     LEITOR: TOPO COMPACTO & ERGONÔMICO NO CELULAR
+     ------------------------------------------------------ */
   .reader-top-bar {
     padding: 0.5rem 0.75rem;
     gap: 0.5rem;
   }
 
+  .btn-reader-back-btn {
+    padding: 0.4rem 0.65rem;
+    min-height: 38px;
+    font-size: 0.875rem;
+  }
+
+  .btn-back-text {
+    display: none; /* Deixa apenas a seta '←' em celulares para dar espaço ao título */
+  }
+
   .reader-meta-center {
-    max-width: 200px;
+    max-width: 180px;
+    min-width: 0;
   }
 
   .reader-book-title {
     font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .reader-chapter-title {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reader-page-badge {
+    font-size: 0.6875rem;
+  }
+
+  .reader-actions-right {
+    gap: 0.35rem;
+  }
+
+  .reader-actions-right .btn-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
   }
 
   .reader-canvas {
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 0.875rem;
   }
 
-  /* Player compacto em telas pequenas */
-  .player-main-controls {
-    flex-wrap: wrap;
-    justify-content: center;
+  .reader-heading-main {
+    font-size: 1.45em;
+  }
+
+  /* ------------------------------------------------------
+     PLAYER DE ÁUDIO COMPACTO & TOQUE FÁCIL NO CELULAR
+     ------------------------------------------------------ */
+  .reader-player-bar {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    border-radius: 18px 18px 0 0 !important;
+    border-top: 1.5px solid var(--border-color) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.16) !important;
+    padding: 0.65rem 0.875rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) 0.875rem !important;
+    z-index: 150;
+  }
+
+  .player-inner-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+    max-width: 100% !important;
+  }
+
+  /* Linha 1 no Mobile: Título do Documento e Equalizador */
+  .player-left-col {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
   }
 
-  .player-speed-group {
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
+  .player-text-details {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .player-doc-badge {
+    font-size: 0.72rem;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-phrase-text {
+    display: none; /* Oculta frase no mini dock mobile para não esticar verticalmente */
+  }
+
+  /* Linha 2 no Mobile: Controles de Transporte e Linha do Tempo */
+  .player-center-col {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .player-transport-row {
     justify-content: center;
+    gap: 1.25rem;
   }
 
-  .player-ticker {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.625rem;
+  .btn-player-nav {
+    width: 42px;
+    height: 42px;
+    font-size: 1.1rem;
   }
 
-  /* ========================================================
-     MODAIS ESTILO NATIVE BOTTOM SHEET EM SMARTPHONES
-     ======================================================== */
+  .btn-player-play {
+    width: 52px;
+    height: 52px;
+    font-size: 1.4rem;
+  }
+
+  .player-timeline-wrapper {
+    max-width: 100%;
+    gap: 0.5rem;
+  }
+
+  .timeline-time {
+    font-size: 0.7rem;
+  }
+
+  /* Linha 3 no Mobile: Velocidades e Voz */
+  .player-right-col {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.35rem;
+  }
+
+  .player-speed-group {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .speed-chip {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.7rem;
+    min-width: 38px;
+    height: 28px;
+  }
+
+  .player-shortcut-hint {
+    display: none !important; /* Sem atalhos de teclado no celular */
+  }
+
+  .reader-view-container {
+    padding-bottom: calc(165px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* ------------------------------------------------------
+     MODAIS ESTILO BOTTOM SHEET NATIVO EM SMARTPHONES
+     ------------------------------------------------------ */
   .modal-backdrop {
     align-items: flex-end;
     padding: 0;
   }
 
   .modal-dialog {
-    max-width: 100%;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 22px 22px 0 0 !important;
     max-height: 85vh;
-    padding: 1.25rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) 1rem;
+    padding: 1.25rem 1rem calc(1.75rem + env(safe-area-inset-bottom, 0px)) 1rem;
     animation: sheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
   }
 
   @keyframes sheetSlideUp {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 
-  /* Barra de puxar no topo do bottom sheet */
+  /* Pílula de puxar no topo do bottom sheet */
   .modal-dialog::before {
     content: '';
     display: block;
-    width: 40px;
-    height: 4px;
+    width: 44px;
+    height: 5px;
     background: var(--border-color);
     border-radius: var(--radius-full);
-    margin: -0.5rem auto 0.75rem auto;
+    margin: -0.5rem auto 0.85rem auto;
   }
 
-  /* Biblioteca em 1 coluna no celular */
-  .books-grid {
+  /* Preferências em 1 coluna no celular */
+  .font-cards-grid {
     grid-template-columns: 1fr;
   }
 
-  .library-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .theme-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .library-header-actions {
-    width: 100%;
-    justify-content: space-between;
+  .pref-section {
+    padding: 1rem;
+  }
+
+  /* Tabela de atalhos rolável */
+  .shortcuts-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
 
 /* ========================================================
-   TABLETS (iPad, Android Tablets: 641px a 1024px)
+   TELAS MUITO ESTREITAS (SMARTPHONES PEQUENOS < 380px)
    ======================================================== */
-@media (min-width: 641px) and (max-width: 1024px) {
+@media (max-width: 379px) {
+  .reader-meta-center {
+    max-width: 130px;
+  }
+
+  .player-transport-row {
+    gap: 0.75rem;
+  }
+
+  .btn-player-play {
+    width: 46px;
+    height: 46px;
+    font-size: 1.25rem;
+  }
+
+  .btn-player-nav {
+    width: 38px;
+    height: 38px;
+  }
+
+  .theme-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================================
+   TABLETS (IPAD, TABLETS ANDROID: 700px A 1024px)
+   ======================================================== */
+@media (min-width: 700px) and (max-width: 1024px) {
   .reader-canvas {
-    max-width: 680px;
-    padding: 2.5rem 2rem;
+    max-width: 720px;
+    padding: 2.5rem 1.75rem;
   }
 
   .books-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reader-player-bar {
+    bottom: 2rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    border-radius: 20px;
+    padding: 0.85rem 1.5rem;
+  }
+
+  .reader-view-container {
+    padding-bottom: 220px;
+  }
+
+  .player-inner-content {
+    grid-template-columns: 200px 1fr 220px;
+    gap: 1rem;
   }
 }
 
@@ -265,3 +523,4 @@ input, select, textarea {
   font-size: 0.75rem;
   border-radius: var(--radius-full);
 }
+
