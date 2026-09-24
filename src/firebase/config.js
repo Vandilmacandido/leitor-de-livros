@@ -20,14 +20,14 @@ function getFirebaseConfig() {
     console.warn('Erro ao ler configuração local do Firebase:', e);
   }
 
-  // Fallback com credenciais padrão do projeto acessiread
+  // Variáveis de ambiente seguras (injetadas pelo Vite localmente e pelo Netlify em produção)
   return {
-    apiKey: import.meta.env?.VITE_FIREBASE_API_KEY || 'AIzaSyBoSSDxxDzPaA9rikTGgn_VqWvcPra6en8',
-    authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || 'acessiread.firebaseapp.com',
-    projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || 'acessiread',
-    storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || 'acessiread.firebasestorage.app',
-    messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || '1058443843095',
-    appId: import.meta.env?.VITE_FIREBASE_APP_ID || '1:1058443843095:web:91db34e756a22961a26e52'
+    apiKey: import.meta.env?.VITE_FIREBASE_API_KEY || '',
+    authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN || '',
+    projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID || '',
+    storageBucket: import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: import.meta.env?.VITE_FIREBASE_APP_ID || ''
   };
 }
 
