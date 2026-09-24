@@ -135,14 +135,20 @@ function switchView(viewId) {
     }
   }
 
-  // Atualiza a barra de navegação inferior estilo App Web
+  // Controla classe no body e a barra de navegação inferior estilo App Web
   const bottomNav = document.getElementById('mobile-bottom-nav');
+  if (viewId === 'view-reader') {
+    document.body.classList.add('in-reader-view');
+  } else {
+    document.body.classList.remove('in-reader-view');
+  }
+
   if (bottomNav) {
-    if (viewId === 'view-auth') {
+    if (viewId === 'view-auth' || viewId === 'view-reader') {
       bottomNav.style.display = 'none';
     } else {
       bottomNav.style.display = 'flex';
-      updateMobileNavActiveTab(viewId === 'view-reader' ? 'reader' : 'library');
+      updateMobileNavActiveTab('library');
     }
   }
 }
@@ -573,12 +579,21 @@ function openBook(book, targetSentenceIdOrIndex = 0, autoPlay = false) {
 
   state.currentSentenceIndex = targetIndex;
 
+  // Atualiza detalhes do player de desktop (Badge, Timeline e Voz)
+  const docBadge = document.getElementById('player-doc-badge');
+  if (docBadge) {
+    docBadge.textContent = `${book.title} • ${chapter?.title || 'Capítulo 1'}`;
+  }
+  updatePlayerTimelineUI();
+  updatePlayerVoiceBadge();
+
   // Rola até a frase
   setTimeout(() => {
     const targetSentence = state.sentences[targetIndex];
     if (targetSentence?.element) {
       targetSentence.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       highlightSentenceInDOM(targetSentence.id);
+      document.getElementById('player-current-sentence').textContent = targetSentence.text;
     }
 
     if (autoPlay && targetSentence) {
@@ -587,6 +602,40 @@ function openBook(book, targetSentenceIdOrIndex = 0, autoPlay = false) {
   }, 200);
 
   keyboardNav.announce(`Livro ${book.title} aberto. ${chapter?.title}.`);
+}
+
+function updatePlayerTimelineUI() {
+  const scrubber = document.getElementById('player-scrubber');
+  const currentTxt = document.getElementById('player-progress-current');
+  const totalTxt = document.getElementById('player-progress-total');
+
+  const total = state.sentences.length;
+  const current = state.currentSentenceIndex;
+  const pct = total > 0 ? Math.round(((current + 1) / total) * 100) : 0;
+
+  if (scrubber) {
+    scrubber.min = '0';
+    scrubber.max = `${Math.max(0, total - 1)}`;
+    scrubber.value = `${current}`;
+  }
+  if (currentTxt) {
+    currentTxt.textContent = `Frase ${current + 1}`;
+  }
+  if (totalTxt) {
+    totalTxt.textContent = `${total} frases (${pct}%)`;
+  }
+}
+
+function updatePlayerVoiceBadge() {
+  const voiceBadgeText = document.getElementById('player-voice-name');
+  if (!voiceBadgeText) return;
+  const selectedVoice = speechEngine.getSelectedVoice();
+  if (selectedVoice) {
+    const isPt = selectedVoice.lang.toLowerCase().startsWith('pt');
+    voiceBadgeText.textContent = `${isPt ? '🇧🇷 ' : ''}${selectedVoice.name.split(' ')[0]}`;
+  } else {
+    voiceBadgeText.textContent = 'Voz do Sistema';
+  }
 }
 
 function renderChapterContent(chapter) {
@@ -667,6 +716,7 @@ function bindReaderEvents() {
   btnStop?.addEventListener('click', () => {
     speechEngine.stop();
     clearActiveSentenceHighlight();
+    document.getElementById('desktop-audio-equalizer')?.classList.remove('animating');
   });
   btnPrev?.addEventListener('click', () => prevSentence(true));
   btnNext?.addEventListener('click', () => nextSentence(true));
@@ -678,6 +728,37 @@ function bindReaderEvents() {
   btnHighlights?.addEventListener('click', () => openHighlightsDrawer());
   btnSearch?.addEventListener('click', () => openModal('modal-search'));
   btnPrefs?.addEventListener('click', () => openModal('modal-preferences'));
+
+  // Scrubber / Linha do Tempo de Leitura (Desktop & Mobile)
+  const scrubber = document.getElementById('player-scrubber');
+  scrubber?.addEventListener('input', (e) => {
+    const idx = parseInt(e.target.value, 10);
+    if (!isNaN(idx) && idx >= 0 && idx < state.sentences.length) {
+      state.currentSentenceIndex = idx;
+      updatePlayerTimelineUI();
+      const targetSentence = state.sentences[idx];
+      if (targetSentence) {
+        document.getElementById('player-current-sentence').textContent = targetSentence.text;
+        highlightSentenceInDOM(targetSentence.id);
+        targetSentence.element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  });
+
+  scrubber?.addEventListener('change', (e) => {
+    const idx = parseInt(e.target.value, 10);
+    if (!isNaN(idx) && idx >= 0 && idx < state.sentences.length) {
+      if (speechEngine.state === 'playing') {
+        playSentence(idx);
+      }
+    }
+  });
+
+  // Botão de Informações de Voz no Player
+  const btnVoiceInfo = document.getElementById('btn-player-voice-info');
+  btnVoiceInfo?.addEventListener('click', () => {
+    openModal('modal-preferences');
+  });
 
   // Velocidades
   speedChips.forEach(chip => {
@@ -719,6 +800,8 @@ function bindSpeechEngineCallbacks() {
   speechEngine.onSentenceStart = (sentence) => {
     highlightSentenceInDOM(sentence.id);
     document.getElementById('player-current-sentence').textContent = sentence.text;
+    updatePlayerTimelineUI();
+    document.getElementById('desktop-audio-equalizer')?.classList.add('animating');
   };
 
   speechEngine.onSentenceEnd = (sentence) => {
@@ -741,23 +824,28 @@ function bindSpeechEngineCallbacks() {
       speechEngine.stop();
       clearActiveSentenceHighlight();
       document.getElementById('player-current-sentence').textContent = 'Fim do capítulo alcançado.';
+      document.getElementById('desktop-audio-equalizer')?.classList.remove('animating');
       showToast('Fim da leitura deste capítulo!');
     }
   };
 
   speechEngine.onStateChange = (playbackState) => {
     const playIcon = document.getElementById('player-play-icon');
+    const equalizer = document.getElementById('desktop-audio-equalizer');
     if (playbackState === 'playing') {
       playIcon.textContent = '⏸';
       document.getElementById('btn-player-play').setAttribute('title', 'Pausar Áudio (Espaço)');
+      equalizer?.classList.add('animating');
     } else {
       playIcon.textContent = '▶';
       document.getElementById('btn-player-play').setAttribute('title', 'Iniciar Áudio (Espaço)');
+      equalizer?.classList.remove('animating');
     }
   };
 
   speechEngine.onError = (err) => {
     console.warn('Erro do motor de voz:', err);
+    document.getElementById('desktop-audio-equalizer')?.classList.remove('animating');
   };
 }
 
@@ -911,6 +999,7 @@ function bindPreferencesEvents() {
   voiceSelect?.addEventListener('change', (e) => {
     const uri = e.target.value;
     preferencesManager.update({ voiceURI: uri });
+    updatePlayerVoiceBadge();
   });
 
   btnTestVoice?.addEventListener('click', () => {
@@ -956,6 +1045,8 @@ function populateVoiceSelector() {
     }
     select.appendChild(opt);
   });
+
+  updatePlayerVoiceBadge();
 }
 
 // ========================================================

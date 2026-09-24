@@ -335,16 +335,26 @@
              ======================================================== -->
         <aside class="reader-player-bar" role="region" aria-label="Controles de reprodução de voz sintetizada">
           <div class="player-inner-content">
-            <!-- Ticker da Frase Falada no Momento -->
-            <div class="player-ticker" aria-live="polite">
-              <span class="ticker-icon" aria-hidden="true">🎙️</span>
-              <span id="player-current-sentence" class="ticker-text">Toque em qualquer frase ou pressione Espaço para iniciar o áudio.</span>
+            <!-- Coluna Esquerda (Desktop): Documento, Capítulo e Frase Falada -->
+            <div class="player-left-col">
+              <div id="desktop-audio-equalizer" class="audio-equalizer" aria-hidden="true" title="Status da reprodução de voz">
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+              </div>
+              <div class="player-text-details">
+                <span id="player-doc-badge" class="player-doc-badge">Dom Casmurro • Cap. 14</span>
+                <span id="player-current-sentence" class="player-phrase-text" title="Toque em qualquer frase ou pressione Espaço para iniciar">
+                  Toque em qualquer frase ou pressione Espaço para iniciar o áudio.
+                </span>
+              </div>
             </div>
 
-            <!-- Controles Principais -->
-            <div class="player-main-controls">
-              <div class="player-nav-group">
-                <button type="button" id="btn-player-prev" class="btn-icon" title="Frase Anterior (Seta Esquerda)" aria-label="Voltar para a frase anterior">
+            <!-- Coluna Central: Controles de Transporte e Scrubber / Linha do Tempo -->
+            <div class="player-center-col">
+              <div class="player-transport-row">
+                <button type="button" id="btn-player-prev" class="btn-icon btn-player-nav" title="Frase Anterior (Seta Esquerda)" aria-label="Voltar para a frase anterior">
                   <span aria-hidden="true">⏮</span>
                 </button>
 
@@ -352,16 +362,25 @@
                   <span id="player-play-icon" aria-hidden="true">▶</span>
                 </button>
 
-                <button type="button" id="btn-player-stop" class="btn-icon" title="Parar Reprodução (Esc)" aria-label="Parar reprodução de voz">
+                <button type="button" id="btn-player-stop" class="btn-icon btn-player-nav" title="Parar Reprodução (Esc)" aria-label="Parar reprodução de voz">
                   <span aria-hidden="true">■</span>
                 </button>
 
-                <button type="button" id="btn-player-next" class="btn-icon" title="Próxima Frase (Seta Direita)" aria-label="Avançar para a próxima frase">
+                <button type="button" id="btn-player-next" class="btn-icon btn-player-nav" title="Próxima Frase (Seta Direita)" aria-label="Avançar para a próxima frase">
                   <span aria-hidden="true">⏭</span>
                 </button>
               </div>
 
-              <!-- Seletor Rápido de Velocidade de Fala -->
+              <!-- Linha do Tempo / Scrubber de Frases -->
+              <div class="player-timeline-wrapper">
+                <span id="player-progress-current" class="timeline-time" aria-hidden="true">Frase 1</span>
+                <input type="range" id="player-scrubber" class="player-scrubber-slider" min="0" max="10" value="0" step="1" aria-label="Linha do tempo de leitura no capítulo">
+                <span id="player-progress-total" class="timeline-time" aria-hidden="true">12 frases (0%)</span>
+              </div>
+            </div>
+
+            <!-- Coluna Direita (Desktop): Velocidade, Voz e Dica de Atalho -->
+            <div class="player-right-col">
               <div class="player-speed-group" role="group" aria-label="Velocidade da voz">
                 <button type="button" class="speed-chip" data-speed="0.75" aria-label="Velocidade 0.75x">0.75x</button>
                 <button type="button" class="speed-chip active" data-speed="1.0" aria-label="Velocidade 1.0x normal">1.0x</button>
@@ -369,10 +388,14 @@
                 <button type="button" class="speed-chip" data-speed="1.5" aria-label="Velocidade 1.5x">1.5x</button>
                 <button type="button" class="speed-chip" data-speed="2.0" aria-label="Velocidade 2.0x">2.0x</button>
               </div>
-            </div>
 
-            <div class="player-shortcut-hint" aria-hidden="true">
-              Espaço: Ouvir / Pausar • ← →: Frases • Alt+C: Contraste • Esc: Parar
+              <div class="player-voice-info-row">
+                <button type="button" id="btn-player-voice-info" class="badge badge-voice" title="Clique para alterar preferências de voz" aria-label="Voz atual do sintetizador. Clique para alterar preferências">
+                  <span aria-hidden="true">🔊</span>
+                  <span id="player-voice-name">Voz pt-BR</span>
+                </button>
+                <span class="player-shortcut-hint" aria-hidden="true">Espaço: Play • ← →: Frases</span>
+              </div>
             </div>
           </div>
         </aside>

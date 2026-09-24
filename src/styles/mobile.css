@@ -25,11 +25,16 @@
   transition: transform 0.25s ease, background-color 0.25s ease;
 }
 
-/* Oculta em telas grandes de desktop para manter layout limpo */
-@media (min-width: 1025px) {
+/* Oculta a barra de abas mobile em desktop (telas a partir de 769px) */
+@media (min-width: 769px) {
   .mobile-bottom-nav {
-    display: none;
+    display: none !important;
   }
+}
+
+/* Quando dentro do leitor, oculta a barra mobile para dar foco total ao player de leitura */
+.in-reader-view .mobile-bottom-nav {
+  display: none !important;
 }
 
 .mobile-nav-item {
@@ -76,17 +81,15 @@
 }
 
 /* ========================================================
-   AJUSTES RESPONSIVOS NO LEITOR (MOBILE & TABLET)
+   AJUSTES RESPONSIVOS NO LEITOR (MOBILE)
    ======================================================== */
-@media (max-width: 1024px) {
-  /* Quando no leitor com player ativo no celular/tablet,
-     o player de voz fica acima da barra de navegação do app */
+@media (max-width: 768px) {
   .reader-view-container {
-    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
   }
 
   .reader-player-bar {
-    bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+    bottom: 0;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
   }
 
