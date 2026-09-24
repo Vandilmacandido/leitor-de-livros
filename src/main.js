@@ -1214,24 +1214,30 @@ function setupFirebaseModal() {
     }
   }
 
+  function fillInputs() {
+    const cfg = fbConfig;
+    if (cfg) {
+      if (inputApiKey && cfg.apiKey) inputApiKey.value = cfg.apiKey;
+      if (inputProjectId && cfg.projectId) inputProjectId.value = cfg.projectId;
+      if (inputAuthDomain && cfg.authDomain) inputAuthDomain.value = cfg.authDomain;
+      if (inputAppId && cfg.appId) inputAppId.value = cfg.appId;
+    }
+  }
+
   updateFirebaseUI();
+  fillInputs();
 
   // Abrir modal ao clicar no botão de chama ou no badge
-  btnOpenConfig?.addEventListener('click', () => openModal('modal-firebase'));
-  btnBadge?.addEventListener('click', () => openModal('modal-firebase'));
-
-  // Preenche inputs com valores atuais
-  const inputApiKey = document.getElementById('fb-input-apikey') || document.getElementById('fb-api-key');
-  const inputProjectId = document.getElementById('fb-input-projectid') || document.getElementById('fb-project-id');
-  const inputAuthDomain = document.getElementById('fb-input-authdomain') || document.getElementById('fb-auth-domain');
-  const inputAppId = document.getElementById('fb-input-appid') || document.getElementById('fb-app-id');
-
-  if (fbConfig) {
-    if (inputApiKey && fbConfig.apiKey) inputApiKey.value = fbConfig.apiKey;
-    if (inputProjectId && fbConfig.projectId) inputProjectId.value = fbConfig.projectId;
-    if (inputAuthDomain && fbConfig.authDomain) inputAuthDomain.value = fbConfig.authDomain;
-    if (inputAppId && fbConfig.appId) inputAppId.value = fbConfig.appId;
-  }
+  btnOpenConfig?.addEventListener('click', () => {
+    updateFirebaseUI();
+    fillInputs();
+    openModal('modal-firebase');
+  });
+  btnBadge?.addEventListener('click', () => {
+    updateFirebaseUI();
+    fillInputs();
+    openModal('modal-firebase');
+  });
 
   form?.addEventListener('submit', (e) => {
     e.preventDefault();
