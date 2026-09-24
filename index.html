@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="theme-light-comfort">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcessiRead — Leitor Web Acessível</title>
+  <meta name="description" content="Leitor web acessível de PDFs e e-books com síntese de voz (Web Speech API), sincronização visual de frases, marca-texto e suporte a WCAG 2.2 AAA.">
+  
+  <!-- Favicon Acessível -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Google Fonts: Lexend, Inter, Merriweather -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+
+  <!-- OpenDyslexic Web Font -->
+  <style>
+    @font-face {
+      font-family: 'OpenDyslexic';
+      src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@0.9.0/open-dyslexic/open-dyslexic-regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+
+  <!-- Estilos da Aplicação -->
+  <link rel="stylesheet" href="/src/styles/reset.css">
+  <link rel="stylesheet" href="/src/styles/variables.css">
+  <link rel="stylesheet" href="/src/styles/base.css">
+  <link rel="stylesheet" href="/src/styles/auth.css">
+  <link rel="stylesheet" href="/src/styles/library.css">
+  <link rel="stylesheet" href="/src/styles/reader.css">
+  <link rel="stylesheet" href="/src/styles/preferences.css">
+  <link rel="stylesheet" href="/src/styles/modals.css">
+</head>
+<body>
+  <!-- Link de salto acessível para tecnologias assistivas -->
+  <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
+  <!-- Região ARIA Live para anúncios sonoros aos leitores de tela -->
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Contêiner de Notificações Toast -->
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="main-content">
+    <!-- ========================================================
+         TELA 1: AUTENTICAÇÃO E BOAS-VINDAS (MOCKUP 1)
+         ======================================================== -->
+    <section id="view-auth" class="app-view active">
+      <div class="auth-container">
+        <div class="auth-card">
+          <div class="auth-brand">
+            <div class="auth-logo-badge" aria-hidden="true">📖</div>
+            <span class="badge badge-primary">Leitor Digital com Síntese de Voz</span>
+            <h1 class="auth-title">Bem-vindo ao AcessiRead</h1>
+            <p class="auth-subtitle">Seu leitor web acessível de PDFs e e-books com leitura visual e por voz sincronizada.</p>
+          </div>
+
+          <!-- Banner de Acessibilidade Imediata -->
+          <div class="auth-accessibility-banner" role="region" aria-label="Acessibilidade da plataforma">
+            <div class="banner-header">
+              <span aria-hidden="true">♿</span>
+              <span>Acessibilidade Imediata</span>
+            </div>
+            <p class="banner-desc">
+              Plataforma preparada para navegação completa por teclado (Tab, Enter, Espaço) e suporte a leitores de tela (NVDA, TalkBack, VoiceOver).
+            </p>
+            <button type="button" id="btn-speak-welcome" class="btn-speak-instructions" aria-label="Ouvir instruções desta tela com voz sintetizada">
+              <span aria-hidden="true">🔊</span>
+              <span>Ouvir instruções desta tela</span>
+            </button>
+          </div>
+
+          <!-- Formulário -->
+          <form id="auth-form" class="auth-form" novalidate>
+            <div class="form-group" id="group-name" style="display: none;">
+              <label for="input-name" class="form-label">Nome Completo</label>
+              <input type="text" id="input-name" class="form-input" placeholder="Ex: Mariana Silva" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+              <label for="input-email" class="form-label">E-mail cadastrado <span aria-hidden="true">*</span></label>
+              <input type="email" id="input-email" class="form-input" placeholder="seu.email@exemplo.com" required autocomplete="email">
+              <span class="form-helper">Digite o endereço de e-mail da sua biblioteca</span>
+            </div>
+
+            <div class="form-group">
+              <label for="input-password" class="form-label">Senha de acesso <span aria-hidden="true">*</span></label>
+              <div class="form-input-wrapper">
+                <input type="password" id="input-password" class="form-input" placeholder="Digite sua senha segura" required autocomplete="current-password">
+                <button type="button" id="btn-toggle-pwd" class="btn-toggle-password" aria-label="Alternar visibilidade da senha">
+                  <span id="pwd-icon" aria-hidden="true">👁️</span>
+                </button>
+              </div>
+              <span class="form-helper">Mínimo de 6 caracteres</span>
+            </div>
+
+            <div class="form-checkbox-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="check-remember" checked>
+                <span>Lembrar neste aparelho</span>
+              </label>
+              <button type="button" id="btn-switch-auth-mode" class="btn-outline" style="border:none; padding: 0.25rem; font-size:0.8125rem;">
+                <span id="auth-switch-text">Criar conta gratuita</span>
+              </button>
+            </div>
+
+            <button type="submit" id="btn-submit-auth" class="btn btn-primary auth-submit-btn">
+              <span id="btn-auth-label">Entrar na Minha Biblioteca</span>
+            </button>
+          </form>
+
+          <!-- Acesso de Demonstração Imediato -->
+          <div class="demo-account-box">
+            <p>Deseja testar a leitura de imediato sem criar conta?</p>
+            <button type="button" id="btn-demo-login" class="btn btn-secondary" style="width: 100%;">
+              <span aria-hidden="true">✨</span>
+              <span>Entrar como Mariana (Conta Demo)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recursos em destaque -->
+        <div class="auth-features-row">
+          <div class="auth-feature-pill">
+            <span class="feature-pill-icon" aria-hidden="true">🎙️</span>
+            <div class="feature-pill-text">
+              <strong>Voz Natural Sincronizada</strong>
+              <span>Destaque visual frase a frase enquanto ouve a narração fluida.</span>
+            </div>
+          </div>
+          <div class="auth-feature-pill">
+            <span class="feature-pill-icon" aria-hidden="true">📄</span>
+            <div class="feature-pill-text">
+              <strong>Formatos Acessíveis</strong>
+              <span>Importe documentos PDF, EPUB e texto mantendo total conforto visual.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         TELA 2: MINHA BIBLIOTECA PESSOAL (MOCKUP 4)
+         ======================================================== -->
+    <section id="view-library" class="app-view">
+      <div class="library-container">
+        <!-- Topo da Biblioteca -->
+        <header class="library-header">
+          <div class="library-user-info">
+            <div class="library-avatar" id="library-avatar" aria-hidden="true">M</div>
+            <div>
+              <h1 class="library-welcome-title" id="library-welcome-text">Olá, Mariana!</h1>
+              <p class="library-welcome-subtitle">Pronta para continuar sua leitura inclusiva?</p>
+            </div>
+          </div>
+
+          <div class="library-header-actions">
+            <!-- Atalhos de Acessibilidade Rápidos -->
+            <button type="button" id="btn-lib-toggle-contrast" class="btn-icon" title="Alternar Alto Contraste (Alt+C)" aria-label="Alternar modo de alto contraste">
+              <span aria-hidden="true">🌓</span>
+            </button>
+            <button type="button" id="btn-lib-open-preferences" class="btn-icon" title="Preferências de Leitura (Alt+T)" aria-label="Abrir preferências de leitura e acessibilidade">
+              <span aria-hidden="true">Aa</span>
+            </button>
+            <button type="button" id="btn-open-firebase-config" class="btn-icon" title="Configurar Conexão Firebase / Nuvem" aria-label="Configurar conexão com o Firebase">
+              <span aria-hidden="true">🔥</span>
+            </button>
+            <button type="button" id="btn-logout" class="btn-icon" title="Sair da Conta" aria-label="Sair da conta">
+              <span aria-hidden="true">🚪</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Card de Meta de Leitura -->
+        <div class="library-goal-card" role="region" aria-label="Meta de leitura">
+          <div class="goal-card-top">
+            <div class="goal-title">
+              <span aria-hidden="true">🎯</span>
+              <span>Meta Semanal de Leitura</span>
+            </div>
+            <span class="goal-badge">70% da meta</span>
+          </div>
+          <div class="goal-progress-bar-bg" aria-hidden="true">
+            <div class="goal-progress-bar-fill" style="width: 70%;"></div>
+          </div>
+          <div class="goal-card-footer">
+            <span>85 min ouvidos de 120 planejados</span>
+            <span>+35 min para completar</span>
+          </div>
+        </div>
+
+        <!-- Busca na Biblioteca -->
+        <div class="library-search-box">
+          <span class="library-search-icon" aria-hidden="true">🔍</span>
+          <input type="search" id="input-library-search" class="library-search-input" placeholder="Buscar documento na biblioteca por título ou autor..." aria-label="Buscar documento na biblioteca por título ou autor">
+        </div>
+
+        <!-- Filtros por Status -->
+        <div class="library-filter-tabs" role="tablist" aria-label="Filtros de livros">
+          <button type="button" class="filter-tab active" data-filter="all" role="tab" aria-selected="true">Todos (<span id="count-all">4</span>)</button>
+          <button type="button" class="filter-tab" data-filter="in-progress" role="tab" aria-selected="false">Em andamento (<span id="count-in-progress">3</span>)</button>
+          <button type="button" class="filter-tab" data-filter="completed" role="tab" aria-selected="false">Concluídos (<span id="count-completed">1</span>)</button>
+        </div>
+
+        <!-- Card de Adicionar / Upload de Documento -->
+        <div id="dropzone-upload" class="library-upload-card" tabindex="0" role="button" aria-label="Adicionar documento. Toque ou pressione Enter para selecionar arquivo PDF ou EPUB">
+          <input type="file" id="file-input-upload" accept=".pdf,.txt,.md,.epub" style="display: none;">
+          <div class="upload-icon-wrapper" aria-hidden="true">☁️</div>
+          <div class="upload-card-title">Adicionar Documento à Biblioteca</div>
+          <p class="upload-card-desc">
+            Toque para selecionar ou arraste o arquivo aqui. Suporta PDF digital com texto e e-books. Arquivos são processados com sincronização de voz.
+          </p>
+          <div id="upload-progress-container" style="display: none; width: 100%; max-width: 320px;">
+            <div class="goal-progress-bar-bg">
+              <div id="upload-progress-bar" class="goal-progress-bar-fill" style="width: 0%;"></div>
+            </div>
+            <span id="upload-progress-text" style="font-size: 0.75rem; margin-top: 0.25rem; display: block;">Processando arquivo...</span>
+          </div>
+        </div>
+
+        <!-- Seção: Livros da Biblioteca -->
+        <h2 class="books-section-title">Meus Livros e Documentos</h2>
+        <div id="books-grid-container" class="books-grid">
+          <!-- Os cards de livros são injetados dinamicamente via JS -->
+        </div>
+
+        <!-- Barra Inferior da Biblioteca com Ações Rápidas -->
+        <div class="library-bottom-bar">
+          <button type="button" id="btn-bottom-open-shortcuts" class="btn btn-secondary">
+            <span aria-hidden="true">⌨️</span>
+            <span>Guia de Atalhos de Teclado (?)</span>
+          </button>
+          <button type="button" id="btn-bottom-open-prefs" class="btn btn-secondary">
+            <span aria-hidden="true">⚙️</span>
+            <span>Preferências de Leitura & Acessibilidade</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         TELA 3: LEITOR ACESSÍVEL (MOCKUP 2 E DESKTOP READER)
+         ======================================================== -->
+    <section id="view-reader" class="app-view">
+      <div class="reader-view-container">
+        <!-- Barra Superior Fixa do Leitor -->
+        <header class="reader-top-bar" role="banner">
+          <div class="reader-nav-left">
+            <button type="button" id="btn-reader-back" class="btn btn-secondary" aria-label="Voltar para a biblioteca (Alt+B)">
+              <span aria-hidden="true">←</span>
+              <span>Biblioteca</span>
+            </button>
+          </div>
+
+          <div class="reader-meta-center">
+            <h1 id="reader-doc-title" class="reader-book-title">Dom Casmurro</h1>
+            <span id="reader-chapter-name" class="reader-chapter-title">Capítulo 14: A Barba de José Dias</span>
+            <span id="reader-page-indicator" class="reader-page-badge">Página 118 de 314 — 64%</span>
+          </div>
+
+          <div class="reader-actions-right">
+            <button type="button" id="btn-reader-search" class="btn-icon" title="Buscar no Documento" aria-label="Buscar palavra ou termo no documento">
+              <span aria-hidden="true">🔍</span>
+            </button>
+            <button type="button" id="btn-reader-highlights" class="btn-icon" title="Ver Destaques e Anotações" aria-label="Ver lista de trechos destacados">
+              <span aria-hidden="true">🖍️</span>
+            </button>
+            <button type="button" id="btn-reader-prefs" class="btn-icon" title="Preferências de Leitura (Alt+T)" aria-label="Preferências de leitura e contraste">
+              <span aria-hidden="true">Aa</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Barra Flutuante de Seleção de Trecho -->
+        <div id="reader-floating-toolbar" class="reader-floating-toolbar" role="toolbar" aria-label="Ações para o trecho selecionado">
+          <button type="button" id="toolbar-btn-speak" class="toolbar-btn" aria-label="Ouvir este trecho selecionado">
+            <span aria-hidden="true">▶</span>
+            <span>Ouvir</span>
+          </button>
+          <button type="button" id="toolbar-btn-highlight" class="toolbar-btn" aria-label="Destacar este trecho com marca-texto">
+            <span aria-hidden="true">🖍️</span>
+            <span>Destacar</span>
+          </button>
+          <button type="button" id="toolbar-btn-copy" class="toolbar-btn" aria-label="Copiar texto selecionado">
+            <span aria-hidden="true">📋</span>
+            <span>Copiar</span>
+          </button>
+        </div>
+
+        <!-- Conteúdo do Documento / Canvas de Leitura -->
+        <article class="reader-canvas">
+          <div class="reader-doc-header">
+            <h2 id="reader-rendered-chapter-title" class="reader-heading-main">Capítulo 14: A Barba de José Dias</h2>
+            <div class="reader-meta-row">
+              <span id="reader-rendered-author">Machado de Assis</span>
+              <span>•</span>
+              <button type="button" id="btn-speak-from-start" class="btn-speak-instructions" style="font-size: 0.8125rem;">
+                <span aria-hidden="true">🔊</span>
+                <span>Ouvir a partir do início deste capítulo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- O texto dividido em parágrafos e frases é renderizado aqui -->
+          <div id="reader-content" class="reader-text-body">
+            <!-- Injetado dinamicamente -->
+          </div>
+        </article>
+
+        <!-- ========================================================
+             PLAYER FIXO INFERIOR DE ÁUDIO SINCRONIZADO
+             ======================================================== -->
+        <aside class="reader-player-bar" role="region" aria-label="Controles de reprodução de voz sintetizada">
+          <div class="player-inner-content">
+            <!-- Ticker da Frase Falada no Momento -->
+            <div class="player-ticker" aria-live="polite">
+              <span class="ticker-icon" aria-hidden="true">🎙️</span>
+              <span id="player-current-sentence" class="ticker-text">Toque em qualquer frase ou pressione Espaço para iniciar o áudio.</span>
+            </div>
+
+            <!-- Controles Principais -->
+            <div class="player-main-controls">
+              <div class="player-nav-group">
+                <button type="button" id="btn-player-prev" class="btn-icon" title="Frase Anterior (Seta Esquerda)" aria-label="Voltar para a frase anterior">
+                  <span aria-hidden="true">⏮</span>
+                </button>
+
+                <button type="button" id="btn-player-play" class="btn-player-play" title="Reproduzir / Pausar (Espaço)" aria-label="Iniciar ou pausar reprodução de voz">
+                  <span id="player-play-icon" aria-hidden="true">▶</span>
+                </button>
+
+                <button type="button" id="btn-player-stop" class="btn-icon" title="Parar Reprodução (Esc)" aria-label="Parar reprodução de voz">
+                  <span aria-hidden="true">■</span>
+                </button>
+
+                <button type="button" id="btn-player-next" class="btn-icon" title="Próxima Frase (Seta Direita)" aria-label="Avançar para a próxima frase">
+                  <span aria-hidden="true">⏭</span>
+                </button>
+              </div>
+
+              <!-- Seletor Rápido de Velocidade de Fala -->
+              <div class="player-speed-group" role="group" aria-label="Velocidade da voz">
+                <button type="button" class="speed-chip" data-speed="0.75" aria-label="Velocidade 0.75x">0.75x</button>
+                <button type="button" class="speed-chip active" data-speed="1.0" aria-label="Velocidade 1.0x normal">1.0x</button>
+                <button type="button" class="speed-chip" data-speed="1.25" aria-label="Velocidade 1.25x">1.25x</button>
+                <button type="button" class="speed-chip" data-speed="1.5" aria-label="Velocidade 1.5x">1.5x</button>
+                <button type="button" class="speed-chip" data-speed="2.0" aria-label="Velocidade 2.0x">2.0x</button>
+              </div>
+            </div>
+
+            <div class="player-shortcut-hint" aria-hidden="true">
+              Espaço: Ouvir / Pausar • ← →: Frases • Alt+C: Contraste • Esc: Parar
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================
+       MODAL: VOCÊ PAROU AQUI! (RETOMADA DE LEITURA - MOCKUP 5)
+       ======================================================== -->
+  <div id="modal-resume" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="resume-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="resume-title" class="modal-title">Você parou aqui!</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar diálogo de retomada">✕</button>
+      </div>
+
+      <div class="resume-book-header">
+        <div id="resume-book-cover" class="resume-book-cover" aria-hidden="true">📕</div>
+        <div class="resume-book-details">
+          <span class="badge" style="align-self: flex-start;">Posição Salva</span>
+          <h3 id="resume-book-title" class="resume-book-title">Dom Casmurro</h3>
+          <span id="resume-book-meta" class="resume-book-meta">Página 118 de 314 — 64% concluído</span>
+        </div>
+      </div>
+
+      <div class="resume-snippet-box">
+        <span class="snippet-tag">Último Trecho Lido</span>
+        <blockquote id="resume-quote-text" class="snippet-quote">
+          "Tudo na casa lembrava o tempo antigo, desde os quadros escuros na parede até o relógio de pêndulo que marcava os minutos com solenidade."
+        </blockquote>
+        <div class="snippet-audio-ready">
+          <span aria-hidden="true">🔊</span>
+          <span>Áudio pronto para retomar exatamente na frase destacada.</span>
+        </div>
+      </div>
+
+      <div class="resume-actions-group">
+        <button type="button" id="btn-resume-continue" class="btn btn-primary btn-resume-primary">
+          <span aria-hidden="true">▶</span>
+          <span>Continuar de onde parei (Áudio & Texto)</span>
+        </button>
+        <button type="button" id="btn-resume-restart" class="btn btn-secondary">
+          <span aria-hidden="true">🔄</span>
+          <span>Recomeçar do início do capítulo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: PREFERÊNCIAS DE LEITURA & ACESSIBILIDADE (MOCKUP 3)
+       ======================================================== -->
+  <div id="modal-preferences" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="prefs-modal-title">
+    <div class="modal-dialog" style="max-width: 640px;">
+      <div class="modal-header">
+        <h2 id="prefs-modal-title" class="modal-title">Preferências de Leitura & Acessibilidade</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar painel de preferências">✕</button>
+      </div>
+
+      <!-- Prévia em Tempo Real -->
+      <div class="pref-preview-card" role="region" aria-label="Prévia da aparência do texto">
+        <span id="preview-badge-status" class="pref-preview-badge">Prévia em Tempo Real: Lexend 18px | 1.8x</span>
+        <div class="pref-preview-text">
+          Acessibilidade não é um recurso extra, mas a ponte que assegura o direito universal à leitura, ao conhecimento e à autonomia.
+        </div>
+      </div>
+
+      <!-- 1. Tipografia & Dislexia -->
+      <section class="pref-section">
+        <h3 class="pref-section-header">
+          <span aria-hidden="true">🔤</span>
+          <span>1. Tipografia & Dislexia</span>
+        </h3>
+
+        <!-- Fontes -->
+        <div class="pref-option-group">
+          <span class="pref-option-label">Fonte Adaptada:</span>
+          <div class="font-cards-grid" role="radiogroup" aria-label="Família de fonte">
+            <button type="button" class="font-choice-card active" data-font="lexend" role="radio" aria-checked="true">
+              <span class="font-choice-name">Lexend</span>
+              <span class="font-choice-desc">Recomendada para fluência e menor cansaço visual.</span>
+            </button>
+            <button type="button" class="font-choice-card" data-font="opendyslexic" role="radio" aria-checked="false">
+              <span class="font-choice-name">OpenDyslexic</span>
+              <span class="font-choice-desc">Desenvolvida para evitar troca e rotação de letras.</span>
+            </button>
+            <button type="button" class="font-choice-card" data-font="inter" role="radio" aria-checked="false">
+              <span class="font-choice-name">Inter (Sem Serifa)</span>
+              <span class="font-choice-desc">Geometria limpa e neutra de alta fidelidade.</span>
+            </button>
+            <button type="button" class="font-choice-card" data-font="merriweather" role="radio" aria-checked="false">
+              <span class="font-choice-name">Serifa Clássico</span>
+              <span class="font-choice-desc">Traços tradicionais com guias de linha horizontais.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tamanho da Fonte -->
+        <div class="pref-option-group">
+          <span class="pref-option-label">Tamanho da Fonte:</span>
+          <div class="chips-row" id="font-size-chips" role="radiogroup" aria-label="Tamanho da fonte">
+            <button type="button" class="chip-btn" data-size="14">14px</button>
+            <button type="button" class="chip-btn" data-size="16">16px</button>
+            <button type="button" class="chip-btn active" data-size="18">18px</button>
+            <button type="button" class="chip-btn" data-size="20">20px</button>
+            <button type="button" class="chip-btn" data-size="22">22px</button>
+            <button type="button" class="chip-btn" data-size="24">24px</button>
+            <button type="button" class="chip-btn" data-size="28">28px</button>
+            <button type="button" class="chip-btn" data-size="32">32px</button>
+          </div>
+        </div>
+
+        <!-- Espaçamento entre Linhas -->
+        <div class="pref-option-group">
+          <span class="pref-option-label">Espaçamento entre Linhas (Line-height):</span>
+          <div class="chips-row" id="line-height-chips">
+            <button type="button" class="chip-btn" data-lineheight="1.5">Padrão 1.5x</button>
+            <button type="button" class="chip-btn active" data-lineheight="1.8">Amplo 1.8x (Recomendado)</button>
+            <button type="button" class="chip-btn" data-lineheight="2.2">Máximo 2.2x</button>
+          </div>
+        </div>
+
+        <!-- Espaçamento entre Palavras e Letras -->
+        <div class="pref-option-group">
+          <span class="pref-option-label">Espaço entre Letras e Palavras:</span>
+          <div class="chips-row" id="spacing-chips">
+            <button type="button" class="chip-btn active" data-spacing="normal">Padrão</button>
+            <button type="button" class="chip-btn" data-spacing="spacious">+ Letras & Palavras</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Temas & Contraste (WCAG 2.2 AAA) -->
+      <section class="pref-section">
+        <h3 class="pref-section-header">
+          <span aria-hidden="true">🎨</span>
+          <span>2. Temas & Contraste (WCAG 2.2 AAA)</span>
+        </h3>
+        <div class="theme-cards-grid" role="radiogroup" aria-label="Temas de cores e contraste">
+          <button type="button" class="theme-choice-card theme-card-light active" data-theme="theme-light-comfort" role="radio" aria-checked="true">
+            <span class="theme-card-name">Claro Conforto</span>
+            <span class="theme-card-badge">Fundo creme suave • Menor cansaço</span>
+          </button>
+          <button type="button" class="theme-choice-card theme-card-dark" data-theme="theme-night-modern" role="radio" aria-checked="false">
+            <span class="theme-card-name">Noite Moderna</span>
+            <span class="theme-card-badge">Fundo escuro • Contraste balanceado</span>
+          </button>
+          <button type="button" class="theme-choice-card theme-card-hc" data-theme="theme-high-contrast" role="radio" aria-checked="false">
+            <span class="theme-card-name">Alto Contraste</span>
+            <span class="theme-card-badge">Amarelo no Preto • WCAG AAA</span>
+          </button>
+          <button type="button" class="theme-choice-card theme-card-mono" data-theme="theme-monochrome" role="radio" aria-checked="false">
+            <span class="theme-card-name">Modo Foco</span>
+            <span class="theme-card-badge">Preto e Branco puro sem distrações</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 3. Voz & Síntese Sonora (Web Speech API) -->
+      <section class="pref-section">
+        <h3 class="pref-section-header">
+          <span aria-hidden="true">🎙️</span>
+          <span>3. Voz & Síntese Sonora (Web Speech API)</span>
+        </h3>
+
+        <div class="pref-option-group">
+          <label for="select-voice" class="pref-option-label">Voz Sintetizada do Navegador:</label>
+          <select id="select-voice" class="voice-select">
+            <option value="">Carregando vozes do sistema...</option>
+          </select>
+        </div>
+
+        <button type="button" id="btn-test-voice-sample" class="btn btn-secondary" style="align-self: flex-start;">
+          <span aria-hidden="true">🔊</span>
+          <span>Ouvir amostra da voz selecionada</span>
+        </button>
+
+        <div class="pref-option-group">
+          <span class="pref-option-label">Tom da Voz (Pitch):</span>
+          <div class="chips-row" id="pitch-chips">
+            <button type="button" class="chip-btn" data-pitch="0.8">Mais Grave</button>
+            <button type="button" class="chip-btn active" data-pitch="1.0">Equilibrado</button>
+            <button type="button" class="chip-btn" data-pitch="1.2">Mais Agudo</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: DESTAQUES E ANOTAÇÕES (MARCA-TEXTO)
+       ======================================================== -->
+  <div id="modal-highlights" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="hl-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="hl-modal-title" class="modal-title">Destaques e Anotações</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar lista de destaques">✕</button>
+      </div>
+
+      <div id="highlights-container-list" class="highlights-list">
+        <!-- Itens de destaque inseridos via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: BUSCA NO DOCUMENTO
+       ======================================================== -->
+  <div id="modal-search" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="search-modal-title" class="modal-title">Pesquisar no Documento</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar busca">✕</button>
+      </div>
+
+      <div class="search-modal-box">
+        <div class="search-input-row">
+          <input type="text" id="input-doc-search" class="form-input" placeholder="Digite uma palavra ou expressão...">
+          <button type="button" id="btn-run-doc-search" class="btn btn-primary">Buscar</button>
+        </div>
+
+        <div class="search-results-info">
+          <span id="search-results-count">0 resultados encontrados</span>
+          <div class="search-nav-buttons">
+            <button type="button" id="btn-search-prev" class="btn btn-secondary" aria-label="Ocorrência anterior">↑</button>
+            <button type="button" id="btn-search-next" class="btn btn-secondary" aria-label="Próxima ocorrência">↓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: CONEXÃO COM O FIREBASE
+       ======================================================== -->
+  <div id="modal-firebase" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="firebase-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="firebase-modal-title" class="modal-title">Conexão com o Firebase</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar diálogo de configuração do Firebase">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div id="firebase-status-banner" class="auth-accessibility-banner">
+          <div class="banner-header">
+            <span aria-hidden="true">🔥</span>
+            <span id="firebase-status-text">Status: Modo Demonstração & Local Ativo</span>
+          </div>
+          <p class="banner-desc">
+            O AcessiRead funciona 100% no navegador salvando dados no seu aparelho. Se desejar sincronizar seus livros e progresso na nuvem gratuitamente, insira as credenciais do seu projeto Firebase (Plano Spark Gratuito).
+          </p>
+        </div>
+
+        <form id="form-firebase-config" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div class="form-group">
+            <label for="fb-api-key" class="form-label">API Key (apiKey)</label>
+            <input type="text" id="fb-api-key" class="form-input" placeholder="AIzaSy...">
+          </div>
+          <div class="form-group">
+            <label for="fb-project-id" class="form-label">Project ID (projectId)</label>
+            <input type="text" id="fb-project-id" class="form-input" placeholder="meu-leitor-firebase">
+          </div>
+          <div class="form-group">
+            <label for="fb-auth-domain" class="form-label">Auth Domain (authDomain)</label>
+            <input type="text" id="fb-auth-domain" class="form-input" placeholder="meu-leitor-firebase.firebaseapp.com">
+          </div>
+          <div class="form-group">
+            <label for="fb-app-id" class="form-label">App ID (appId)</label>
+            <input type="text" id="fb-app-id" class="form-input" placeholder="1:123456789:web:abcdef">
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Salvar e Conectar</button>
+            <button type="button" id="btn-reset-firebase" class="btn btn-secondary">Limpar e Usar Local</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: GUIA DE ATALHOS DE TECLADO (?)
+       ======================================================== -->
+  <div id="modal-shortcuts" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="shortcuts-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="shortcuts-modal-title" class="modal-title">Guia de Atalhos de Teclado (WCAG 2.2)</h2>
+        <button type="button" class="modal-close-btn btn-close-modal" aria-label="Fechar guia de atalhos">✕</button>
+      </div>
+
+      <table class="shortcuts-table">
+        <thead>
+          <tr>
+            <th>Tecla / Atalho</th>
+            <th>Ação Realizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><kbd class="shortcut-kbd">Espaço</kbd></td>
+            <td>Iniciar ou Pausar a leitura em voz alta</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">→</kbd></td>
+            <td>Avançar para a próxima frase</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">←</kbd></td>
+            <td>Retornar à frase anterior</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">Alt + C</kbd></td>
+            <td>Alternar Modo de Alto Contraste (Amarelo/Preto)</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">Alt + T</kbd> ou <kbd class="shortcut-kbd">Alt + A</kbd></td>
+            <td>Abrir Preferências de Leitura & Acessibilidade</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">Alt + B</kbd></td>
+            <td>Retornar à Biblioteca Pessoal</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">+</kbd> / <kbd class="shortcut-kbd">-</kbd></td>
+            <td>Aumentar / Diminuir tamanho do texto</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">Esc</kbd></td>
+            <td>Parar áudio ou fechar qualquer janela aberta</td>
+          </tr>
+          <tr>
+            <td><kbd class="shortcut-kbd">?</kbd></td>
+            <td>Abrir este guia de atalhos</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Ponto de entrada JavaScript -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
